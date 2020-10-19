@@ -30,16 +30,10 @@ int main()
         }
     }
 
-    auto word = words.begin();
-
-    for (; word != std::prev(words.end());) {
-        outFile << word->first << " " << word->second << std::endl;
-        ++word;
+    for (auto word : words) {
+        outFile << word.first << " " << word.second << std::endl;
     }
 
-    outFile << word->first << " " << word->second;
-
-    words.clear();
     inFile.close();
     outFile.close();
 
