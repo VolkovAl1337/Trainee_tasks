@@ -3,16 +3,21 @@
 #include <iostream>
 #include <cstring>
 
+class NegativeIndexException{};
+class TooBigIndexException{};
+
 template <typename T>
 class Vector {
 private:
     T* vectorPtr = NULL;
     int size = 0;
+    int capasity = 1;
 public:
     Vector(int s);
     Vector(int s, T element);
 
     int getSize();
+    int getCapasity();
 
     T* front();
     T* back();
@@ -34,18 +39,26 @@ public:
 template <typename T>
 Vector<T>::Vector(int s)
 {
-    if (s < 1) {
-        s = 1;
+    if (s < 0) {
+        throw NegativeIndexException();
     }
-    vectorPtr = new T[s];
+
     size = s;
+    capasity = s * 2;
+    vectorPtr = new T[capasity];
 }
 
 template <typename T>
 Vector<T>::Vector(int s, T element)
 {
-    vectorPtr = new T[s];
+    if (s < 0) {
+        throw NegativeIndexException();
+    }
+
     size = s;
+    capasity = s * 2;
+    vectorPtr = new T[capasity];
+
     for (int iter = 0; iter < size ; iter++)
     {
         *(vectorPtr + iter) = element;
@@ -56,6 +69,12 @@ template <typename T>
 int Vector<T>::getSize()
 {
     return size;
+}
+
+template <typename T>
+int Vector<T>::getCapasity()
+{
+    return capasity;
 }
 
 template <typename T>
@@ -73,7 +92,13 @@ T* Vector<T>::back()
 template <typename T>
 void Vector<T>::pushBack(T newElement)
 {
-    T* newPtr = new T[size + 1];
+    if (size + 1 <= capasity) {
+        *(vectorPtr + size) = newElement;
+        size += 1;
+        return;
+    }
+    capasity *= 2;
+    T* newPtr = new T[capasity];
     std::memcpy(newPtr, vectorPtr, size * sizeof(T));
     delete[] vectorPtr;
 
@@ -86,7 +111,14 @@ void Vector<T>::pushBack(T newElement)
 template <typename T>
 void Vector<T>::pushFront(T newElement)
 {
-    T* newPtr = new T[size + 1];
+    if (size + 1 <= capasity) {
+        std::memcpy(vectorPtr + 1, vectorPtr, size * sizeof(T));
+        size += 1;
+        *vectorPtr = newElement;
+        return;
+    }
+    capasity *= 2;
+    T* newPtr = new T[capasity];
     std::memcpy(newPtr + 1, vectorPtr, size * sizeof(T));
     delete[] vectorPtr;
 
@@ -107,7 +139,15 @@ void Vector<T>::insert(T newElement, int pos)
         pushFront(newElement);
         return;
     }
-    T* newPtr = new T[size + 1];
+
+    if (size + 1 <= capasity) {
+        std::memcpy(vectorPtr + pos + 1, vectorPtr + pos, sizeof(T) * (size - pos));
+        *(vectorPtr + pos) = newElement;
+        size += 1;
+        return;
+    }
+    capasity *= 2;
+    T* newPtr = new T[capasity];
     std::memcpy(newPtr, vectorPtr, sizeof(T) * pos);
     *(newPtr + pos) = newElement;
     std::memcpy(newPtr + pos + 1, vectorPtr + pos, sizeof(T) * (size - pos));
@@ -125,12 +165,8 @@ T Vector<T>::popFront()
     }
 
     T tmp = *vectorPtr;
-    T* newPtr = new T[size - 1];
 
-    std::memcpy(newPtr, vectorPtr + 1, sizeof(T) * (size - 1));
-
-    delete[] vectorPtr;
-    vectorPtr = newPtr;
+    std::memcpy(vectorPtr, vectorPtr + 1, sizeof(T) * (size - 1));
     size -= 1;
 
     return tmp;
@@ -144,12 +180,7 @@ T Vector<T>::popBack()
     }
 
     T tmp = *(vectorPtr + size - 1);
-    T* newPtr = new T[size - 1];
 
-    std::memcpy(newPtr, vectorPtr, sizeof(T) * (size - 1));
-
-    delete[] vectorPtr;
-    vectorPtr = newPtr;
     size -= 1;
 
     return tmp;
@@ -161,15 +192,11 @@ T Vector<T>::pop(int pos)
     if (size < 1) {
         return 0;
     }
+
     pos %= size;
     T tmp = *(vectorPtr + pos);
-    T* newPtr = new T[size - 1];
 
-    std::memcpy(newPtr, vectorPtr, sizeof(T) * (pos));
-    std::memcpy(newPtr + pos, vectorPtr + pos + 1, sizeof(T) * (size - pos - 1));
-
-    delete[] vectorPtr;
-    vectorPtr = newPtr;
+    std::memcpy(vectorPtr + pos, vectorPtr + pos + 1, sizeof(T) * (size - pos - 1));
     size -= 1;
 
     return tmp;
@@ -209,8 +236,7 @@ T Vector<T>::operator[](int index) const
     }
 
     if (index >= size) {
-        index %= size;
-        return *(vectorPtr + index);
+        throw TooBigIndexException();
     }
 
     return *(vectorPtr + index);
@@ -229,8 +255,7 @@ T& Vector<T>::operator[](int index) {
     }
 
     if (index >= size) {
-        index %= size;
-        return *(vectorPtr + index);
+        throw TooBigIndexException();
     }
 
     return *(vectorPtr + index);

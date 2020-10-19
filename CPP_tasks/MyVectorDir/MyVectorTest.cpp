@@ -2,7 +2,8 @@
 #include "MyVector.h"
 
 int main() {
-    Vector<int> a(5, 999);
+    Vector<int> a(3, 999);
+    // Vector<double> b(-5);
     std::cout << "Vector size " << a.getSize() << std::endl;
     a.outputAll();
     std::cout << std::endl;
@@ -10,14 +11,14 @@ int main() {
     a[0] = 10;
     a[1] = 11;
     a[2] = 22;
-    a[3] = 33;
-    a[4] = 44;
+    // a[3] = 33;
+    // a[4] = 44;
 
 
     a.outputAll();
     std::cout << std::endl;
     std::cout << "=======================" << std::endl;
-    a[7] = 50;
+    //a[7] = 50;
     a[-2] = 9876;
     std::cout<<*a.front()<<" "<<*a.back()<<std::endl;
 
