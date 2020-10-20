@@ -3,8 +3,8 @@
 
 int main()
 {
-    FibIter fibSeq;
-    FibIter fibSeq1(1, 1, 10);
+    FibonacciIterarot fibSeq;
+    FibonacciIterarot fibSeq1(1, 1, 10);
     std::cout << *fibSeq << " iteration: "<< fibSeq.getIteration() << std::endl;
     fibSeq.setIteration(5);
     std::cout << *fibSeq << " iteration: "<< fibSeq.getIteration() << std::endl;
