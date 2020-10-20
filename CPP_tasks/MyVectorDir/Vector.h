@@ -1,5 +1,5 @@
-#ifndef MYVECTOR_H
-#define MYVECTOR_H
+#ifndef VECTOR_H
+#define VECTOR_H
 #include <iostream>
 #include <cstring>
 
@@ -79,8 +79,7 @@ Vector<T>::Vector(int sizeNew, T element)
     capacity = sizeNew * 2;
     vectorPtr = new T[capacity];
 
-    for (int iter = 0; iter < size ; iter++)
-    {
+    for (int iter = 0; iter < size ; iter++) {
         *(vectorPtr + iter) = element;
     }
 }
@@ -137,6 +136,7 @@ void Vector<T>::pushFront(T newElement)
         *vectorPtr = newElement;
         return;
     }
+
     capacity *= 2;
     T* newPtr = new T[capacity];
     std::memcpy(newPtr + 1, vectorPtr, size * sizeof(T));
@@ -245,9 +245,11 @@ T Vector<T>::operator[](int index) const
     if (index < 0) {
         index = -index;
         index %= size;
+
         if (index == 0) {
             index = 1;
         }
+
         return *(vectorPtr + size - index);
     }
 
@@ -262,9 +264,11 @@ T& Vector<T>::operator[](int index) {
     if (index < 0) {
         index = -index;
         index %= size;
+
         if (index == 0) {
             index = 1;
         }
+
         return *(vectorPtr + size - index);
     }
 
