@@ -4,6 +4,7 @@
 #include <cstring>
 
 class NegativeIndexException{};
+class EmptyVectorException{};
 class TooBigIndexException{};
 
 template <typename T>
@@ -11,13 +12,13 @@ class Vector {
 private:
     T* vectorPtr = NULL;
     int size = 0;
-    int capasity = 1;
+    int capacity = 0;
 public:
-    Vector(int s);
-    Vector(int s, T element);
+    Vector(int sizeNew);
+    Vector(int sizeNew, T element);
 
     int getSize();
-    int getCapasity();
+    int getCapacity();
 
     T* front();
     T* back();
@@ -29,7 +30,9 @@ public:
     T pop(int pos);
     void clear();
     void outputAll();
-
+    inline void sizeNegativeCheck(int size);
+    inline void emptyVectorCheck(int size);
+    inline void tooBigSizeCheck(int size);
     T operator [](int index) const;
     T& operator [](int index);
 
@@ -37,27 +40,44 @@ public:
 };
 
 template <typename T>
-Vector<T>::Vector(int s)
-{
-    if (s < 0) {
+inline void Vector<T>::sizeNegativeCheck(int size) {
+    if (size < 0) {
         throw NegativeIndexException();
     }
-
-    size = s;
-    capasity = s * 2;
-    vectorPtr = new T[capasity];
 }
 
 template <typename T>
-Vector<T>::Vector(int s, T element)
-{
-    if (s < 0) {
-        throw NegativeIndexException();
+inline void Vector<T>::emptyVectorCheck(int size) {
+    if (size == 0) {
+        throw EmptyVectorException();
     }
+}
 
-    size = s;
-    capasity = s * 2;
-    vectorPtr = new T[capasity];
+template <typename T>
+inline void Vector<T>::tooBigSizeCheck(int index) {
+    if (index => size) {
+        throw EmptyVectorException();
+    }
+}
+
+template <typename T>
+Vector<T>::Vector(int sizeNew)
+{
+    sizeNegativeCheck(sizeNew);
+
+    size = sizeNew;
+    capacity = sizeNew * 2;
+    vectorPtr = new T[capacity];
+}
+
+template <typename T>
+Vector<T>::Vector(int sizeNew, T element)
+{
+    sizeNegativeCheck(sizeNew);
+
+    size = sizeNew;
+    capacity = sizeNew * 2;
+    vectorPtr = new T[capacity];
 
     for (int iter = 0; iter < size ; iter++)
     {
@@ -72,9 +92,9 @@ int Vector<T>::getSize()
 }
 
 template <typename T>
-int Vector<T>::getCapasity()
+int Vector<T>::getCapacity()
 {
-    return capasity;
+    return capacity;
 }
 
 template <typename T>
@@ -92,13 +112,13 @@ T* Vector<T>::back()
 template <typename T>
 void Vector<T>::pushBack(T newElement)
 {
-    if (size + 1 <= capasity) {
+    if (size < capacity) {
         *(vectorPtr + size) = newElement;
         size += 1;
         return;
     }
-    capasity *= 2;
-    T* newPtr = new T[capasity];
+    capacity *= 2;
+    T* newPtr = new T[capacity];
     std::memcpy(newPtr, vectorPtr, size * sizeof(T));
     delete[] vectorPtr;
 
@@ -111,14 +131,14 @@ void Vector<T>::pushBack(T newElement)
 template <typename T>
 void Vector<T>::pushFront(T newElement)
 {
-    if (size + 1 <= capasity) {
+    if (size < capacity) {
         std::memcpy(vectorPtr + 1, vectorPtr, size * sizeof(T));
         size += 1;
         *vectorPtr = newElement;
         return;
     }
-    capasity *= 2;
-    T* newPtr = new T[capasity];
+    capacity *= 2;
+    T* newPtr = new T[capacity];
     std::memcpy(newPtr + 1, vectorPtr, size * sizeof(T));
     delete[] vectorPtr;
 
@@ -140,14 +160,15 @@ void Vector<T>::insert(T newElement, int pos)
         return;
     }
 
-    if (size + 1 <= capasity) {
+    if (size < capacity) {
         std::memcpy(vectorPtr + pos + 1, vectorPtr + pos, sizeof(T) * (size - pos));
         *(vectorPtr + pos) = newElement;
         size += 1;
         return;
     }
-    capasity *= 2;
-    T* newPtr = new T[capasity];
+
+    capacity *= 2;
+    T* newPtr = new T[capacity];
     std::memcpy(newPtr, vectorPtr, sizeof(T) * pos);
     *(newPtr + pos) = newElement;
     std::memcpy(newPtr + pos + 1, vectorPtr + pos, sizeof(T) * (size - pos));
@@ -160,9 +181,7 @@ void Vector<T>::insert(T newElement, int pos)
 template <typename T>
 T Vector<T>::popFront()
 {
-    if (size < 1) {
-        return 0;
-    }
+    emptyVectorCheck(size);
 
     T tmp = *vectorPtr;
 
@@ -175,9 +194,7 @@ T Vector<T>::popFront()
 template <typename T>
 T Vector<T>::popBack()
 {
-    if (size < 1) {
-        return 0;
-    }
+    emptyVectorCheck(size);
 
     T tmp = *(vectorPtr + size - 1);
 
@@ -189,9 +206,7 @@ T Vector<T>::popBack()
 template <typename T>
 T Vector<T>::pop(int pos)
 {
-    if (size < 1) {
-        return 0;
-    }
+    emptyVectorCheck(size);
 
     pos %= size;
     T tmp = *(vectorPtr + pos);
@@ -208,6 +223,7 @@ void Vector<T>::clear()
     delete[] vectorPtr;
     vectorPtr = NULL;
     size = 0;
+    capacity = 0;
 }
 
 template <typename T>
@@ -235,9 +251,7 @@ T Vector<T>::operator[](int index) const
         return *(vectorPtr + size - index);
     }
 
-    if (index >= size) {
-        throw TooBigIndexException();
-    }
+    tooBigSizeCheck(index);
 
     return *(vectorPtr + index);
 }
@@ -254,9 +268,7 @@ T& Vector<T>::operator[](int index) {
         return *(vectorPtr + size - index);
     }
 
-    if (index >= size) {
-        throw TooBigIndexException();
-    }
+    tooBigSizeCheck(index);
 
     return *(vectorPtr + index);
 }
