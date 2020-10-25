@@ -2,15 +2,14 @@
 
 inline void tooBigCheck(size_t neededSize, size_t availableSize) {
     if (neededSize > availableSize) {
-        throw TooBigPoolException();
+        throw TooBigException();
     }
 }
 
-//allocate 8 mb
-MemoryPool::MemoryPool()
-{
-    poolPtr = new char[bytesIn8MB];
-    poolSize = bytesIn8MB;
+inline void tooSmallCheck(size_t neededSize) {
+    if (neededSize < 1) {
+        throw TooSmallException();
+    }
 }
 
 MemoryPool::MemoryPool(const size_t& poolSize_)
@@ -33,6 +32,7 @@ void MemoryPool::reservePool(const size_t& poolSize_) {
 
 void* MemoryPool::allocate(const size_t& reserveSize)
 {
+    std::lock_guard<std::recursive_mutex> guard(mtMemory);
     size_t poolSizeTmp = poolSize;
 
     if (occupiedSpace.empty()) {
@@ -56,7 +56,6 @@ void* MemoryPool::allocate(const size_t& reserveSize)
                 occupiedSpace.insert(nextInterv,
                 OccupiedInterval(curInterv->occupPtrEnd,
                 reserveSize));
-
                 return (curInterv->occupPtrEnd);
         }
         ++curInterv;
@@ -69,12 +68,12 @@ void* MemoryPool::allocate(const size_t& reserveSize)
     tooBigCheck(reserveSize,  availableSpace);
     occupiedSpace.push_back(OccupiedInterval(
         lastInterv->occupPtrEnd, reserveSize));
-
     return lastInterv->occupPtrEnd;
 }
 
 void MemoryPool::freeMemory(const void* intervalPtr)
 {
+    std::lock_guard<std::recursive_mutex> guard(mtMemory);
     auto deleteElement = std::find(occupiedSpace.begin(),
         occupiedSpace.end(), intervalPtr);
 
@@ -83,35 +82,38 @@ void MemoryPool::freeMemory(const void* intervalPtr)
     }
 }
 
-size_t MemoryPool::getMemory() const
+size_t MemoryPool::getPoolSize()
 {
     return poolSize;
 }
 
-size_t MemoryPool::getIntervalSize(const void* intervaPtr) const
+size_t MemoryPool::getIntervalSize(const void* intervaPtr)
 {
     auto interval = std::find(occupiedSpace.begin(),
         occupiedSpace.end(), intervaPtr);
 
-    if (interval != occupiedSpace.end()) {
-        return interval->getSize();
-    } else {
+    if (interval == occupiedSpace.end()) {
         throw WrongPointerException();
     }
+
+    return interval->getSize();
 }
 
 void* MemoryPool::reallocatePool(const size_t& poolSizeNew)
 {
+    std::lock_guard<std::recursive_mutex> guard(mtMemory);
     tooBigCheck(poolSizeNew, poolSize);
     char* newPoolPtr = new char[poolSizeNew];
     delete[] poolPtr;
     poolPtr = newPoolPtr;
     poolSize = poolSizeNew;
+    mtMemory.unlock();
     return poolPtr;
 }
 
 void* MemoryPool::reallocate(void* intervalPtr, const size_t& newIntervalSize)
 {
+    std::lock_guard<std::recursive_mutex> guard(mtMemory);
     tooBigCheck(newIntervalSize, poolSize);
 
     auto interval = std::find(occupiedSpace.begin(),
@@ -124,9 +126,7 @@ void* MemoryPool::reallocate(void* intervalPtr, const size_t& newIntervalSize)
         if (oldIntervalSize >= newIntervalSize ||
         tmpIntervalEndPtr <= **(std::next(interval)) ||
         std::next(interval) == occupiedSpace.end()) {
-            //std::cout << "Looks like it fits..." << std::endl;
             interval->occupPtrEnd = tmpIntervalEndPtr;
-
             return intervalPtr;
         } else {
             size_t availableSpace = (poolPtr + poolSize) - interval->occupPtrEnd;
@@ -135,10 +135,8 @@ void* MemoryPool::reallocate(void* intervalPtr, const size_t& newIntervalSize)
             memcpy(tmpIntervalPtr, intervalPtr, oldIntervalSize);
             freeMemory(intervalPtr);
             interval->occupPtrEnd = (char*)intervalPtr + newIntervalSize;
-
             return tmpIntervalPtr;
         }
-
     } else {
         throw WrongPointerException();
     }
@@ -147,5 +145,4 @@ void* MemoryPool::reallocate(void* intervalPtr, const size_t& newIntervalSize)
 MemoryPool::~MemoryPool()
 {
     delete[] poolPtr;
-    std::cout << "deleted pointer" << std::endl;
 }

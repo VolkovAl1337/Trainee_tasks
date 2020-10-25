@@ -2,7 +2,6 @@
 #define OCCUPIEDINTERVAL_H
 #include <iostream>
 
-
 struct OccupiedInterval
 {
     friend class MemoryPool;
