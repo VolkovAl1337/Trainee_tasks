@@ -4,8 +4,8 @@
 #include <map>
 
 const int maxMonthNum = 12;
-const int shortFebDays = 28;
-const int longFebDays = 29;
+const int shortFebLength = 28;
+const int longFebLength = 29;
 const int febNum = 2;
 const int decBase = 10;
 
@@ -22,7 +22,7 @@ public:
     Date();
     Date(int day, int month, int year);
     Date(const Date& d1);
-    inline bool isLeap(int year) const;
+    inline bool isLeapYear(int year) const;
     bool isDateCorrect(int day, int month, int year) const;
     void setDay(const int& day);
     void setMonth(const int& month);

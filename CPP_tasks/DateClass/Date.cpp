@@ -34,7 +34,7 @@ Date::Date(const Date& d1)
     year = d1.year;
 }
 
-inline bool Date::isLeap(int year) const
+inline bool Date::isLeapYear(int year) const
 {
     return (year % 4 == 0) && (year % 100 != 0) || (year % 400 == 0);
 }
@@ -58,8 +58,8 @@ bool Date::isDateCorrect(int day, int month, int year) const
     }
 
     if (month == febNum) {
-        if (day == longFebDays) {
-            if (!isLeap(year)) {
+        if (day == longFebLength) {
+            if (!isLeapYear(year)) {
                 return false;
             }
         }
@@ -113,10 +113,10 @@ int Date::getMonth() const
 int Date::getMonthLength() const
 {
     if (month == febNum) {
-        if (isLeap(year)) {
-            return longFebDays;
+        if (isLeapYear(year)) {
+            return longFebLength;
         } else {
-            return shortFebDays;
+            return shortFebLength;
         }
     }
     return (monthLenths[month]);
@@ -179,9 +179,9 @@ void Date::addMonths(int months)
 
         month += months;
 
-        if (month == febNum && day > shortFebDays) {
-            if (isLeap(year)) {
-                if (day > longFebDays) {
+        if (month == febNum && day > shortFebLength) {
+            if (isLeapYear(year)) {
+                if (day > longFebLength) {
                     month = febNum + 1;
                     day = 1;
                 }
@@ -202,7 +202,7 @@ void Date::addMonths(int months)
 
         month += months;
 
-        if (month == febNum && day > shortFebDays) {
+        if (month == febNum && day > shortFebLength) {
             day = getMonthLength();
         }
     }
@@ -217,9 +217,9 @@ void Date::addYears(int years)
             year = 1;
         }
 
-        if (month == febNum && day > shortFebDays) {
-            if (isLeap(year)) {
-                if (day > longFebDays) {
+        if (month == febNum && day > shortFebLength) {
+            if (isLeapYear(year)) {
+                if (day > longFebLength) {
                     month = febNum + 1;
                     day = 1;
                 }
@@ -233,7 +233,7 @@ void Date::addYears(int years)
         if (year == 0) {
             year = -1;
         }
-        if (month == febNum && day > shortFebDays) {
+        if (month == febNum && day > shortFebLength) {
             day = getMonthLength();
         }
     }
