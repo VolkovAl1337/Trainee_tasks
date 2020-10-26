@@ -1,10 +1,11 @@
-#include "FibonacciIterator.h"
 #include <iostream>
+#include "FibonacciIterator.h"
 
 int main()
 {
-    FibonacciIterarot fibSeq;
-    FibonacciIterarot fibSeq1(1, 1, 10);
+    FibonacciIterator fibSeq;
+    FibonacciIterator fibSeq1(1, 1, 10);
+
     std::cout << *fibSeq << " iteration: "<< fibSeq.getIteration() << std::endl;
     fibSeq.setIteration(5);
     std::cout << *fibSeq << " iteration: "<< fibSeq.getIteration() << std::endl;

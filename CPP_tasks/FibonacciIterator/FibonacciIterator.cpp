@@ -1,11 +1,11 @@
 #include "FibonacciIterator.h"
 
-FibonacciIterarot::FibonacciIterarot() = default;
+FibonacciIterator::FibonacciIterator() = default;
 
-FibonacciIterarot::FibonacciIterarot(int older, int cur, int iter) :
+FibonacciIterator::FibonacciIterator(int older, int cur, int iter) :
     oldNum(older), currentNum(cur), iteration(iter) {}
 
-FibonacciIterarot& FibonacciIterarot::operator ++()
+FibonacciIterator& FibonacciIterator::operator ++()
 {
     int tmp = currentNum;
     currentNum += oldNum;
@@ -15,7 +15,7 @@ FibonacciIterarot& FibonacciIterarot::operator ++()
     return *this;
 }
 
-FibonacciIterarot& FibonacciIterarot::operator --()
+FibonacciIterator& FibonacciIterator::operator --()
 {
     if (iteration == 0) {
         throw NegativeIterationException();
@@ -29,17 +29,17 @@ FibonacciIterarot& FibonacciIterarot::operator --()
     return *this;
 }
 
-bool FibonacciIterarot::operator!= (const FibonacciIterarot &it) const
+bool FibonacciIterator::operator!= (const FibonacciIterator &it) const
 {
     return iteration != it.iteration;
 }
 
-int FibonacciIterarot::operator* () const
+int FibonacciIterator::operator* () const
 {
     return currentNum;
 }
 
-int FibonacciIterarot::setIteration(const int& iter)
+int FibonacciIterator::setIteration(const int& iter)
 {
     if (iter < 0) {
         throw NegativeIterationException();
@@ -55,7 +55,7 @@ int FibonacciIterarot::setIteration(const int& iter)
     return currentNum;
 }
 
-int FibonacciIterarot::getIteration() const
+int FibonacciIterator::getIteration() const
 {
     return iteration;
 }
