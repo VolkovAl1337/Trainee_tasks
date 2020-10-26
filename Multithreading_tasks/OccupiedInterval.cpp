@@ -33,7 +33,6 @@ bool OccupiedInterval::operator ==(const OccupiedInterval& occInter_) const
     return occInter_.occupPtr == occupPtr;
 }
 
-//returns pointer to start of an interval
 char* OccupiedInterval::operator*() const
 {
     return occupPtr;

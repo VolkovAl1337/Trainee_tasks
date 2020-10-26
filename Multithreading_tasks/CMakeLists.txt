@@ -15,4 +15,4 @@ add_executable(test ${SOURCE_EXE})
 set(CMAKE_CXX_FLAGS -pthread)
 find_package(Threads REQUIRED)
 
-target_link_libraries(test MultithreadMemoryPool MultithreadMemoryPoolShared)
+target_link_libraries(test MultithreadMemoryPoolShared)

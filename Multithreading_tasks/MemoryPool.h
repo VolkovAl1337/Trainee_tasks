@@ -10,10 +10,10 @@
 #include <mutex>
 #include <thread>
 
-const size_t bytesIn8MB = 8e+6;
-const size_t maxSpace = 1.24e+9;
+const size_t BYTES_IN_8_MB = 8e+6;
+const size_t MAX_SPACE = 1.24e+9; //1 GB
 
-class TooBigException{};
+class OutOfMemoryException{};
 class TooSmallException{};
 class WrongPointerException{};
 

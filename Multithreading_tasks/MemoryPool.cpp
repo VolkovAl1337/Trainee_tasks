@@ -2,7 +2,7 @@
 
 inline void tooBigCheck(size_t neededSize, size_t availableSize) {
     if (neededSize > availableSize) {
-        throw TooBigException();
+        throw OutOfMemoryException();
     }
 }
 
@@ -14,15 +14,15 @@ inline void tooSmallCheck(size_t neededSize) {
 
 MemoryPool::MemoryPool(const size_t& poolSize_)
 {
-    tooBigCheck(poolSize_, maxSpace);
+    tooBigCheck(poolSize_, MAX_SPACE);
     poolPtr = new char[poolSize_];
     poolSize = poolSize_;
 }
 
 void MemoryPool::reservePool(const size_t& poolSize_) {
-    tooBigCheck(poolSize_, maxSpace);
+    tooBigCheck(poolSize_, MAX_SPACE);
 
-    if (poolPtr){
+    if (poolPtr) {
       delete[] poolPtr;
     }
 
@@ -36,7 +36,7 @@ void* MemoryPool::allocate(const size_t& reserveSize)
     size_t poolSizeTmp = poolSize;
 
     if (occupiedSpace.empty()) {
-        tooBigCheck(reserveSize, maxSpace);
+        tooBigCheck(reserveSize, MAX_SPACE);
         occupiedSpace.push_back(OccupiedInterval(poolPtr, reserveSize));
         return poolPtr;
     }
@@ -102,12 +102,10 @@ size_t MemoryPool::getIntervalSize(const void* intervaPtr)
 void* MemoryPool::reallocatePool(const size_t& poolSizeNew)
 {
     std::lock_guard<std::recursive_mutex> guard(mtMemory);
-    tooBigCheck(poolSizeNew, poolSize);
     char* newPoolPtr = new char[poolSizeNew];
     delete[] poolPtr;
     poolPtr = newPoolPtr;
     poolSize = poolSizeNew;
-    mtMemory.unlock();
     return poolPtr;
 }
 
