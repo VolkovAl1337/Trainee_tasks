@@ -1,29 +1,29 @@
 #include "MemoryPool.h"
 
-inline void tooBigCheck(size_t neededSize, size_t availableSize) {
+inline void tooBigAllocCheck(size_t neededSize, size_t availableSize)
+{
     if (neededSize > availableSize) {
         throw OutOfMemoryException();
     }
 }
 
-inline void tooSmallCheck(size_t neededSize) {
+inline void tooSmallAllocCheck(size_t neededSize)
+{
     if (neededSize < 1) {
-        throw TooSmallException();
+        throw NegativeOrZeroException();
     }
 }
 
 MemoryPool::MemoryPool(const size_t& poolSize_)
 {
-    tooBigCheck(poolSize_, MAX_SPACE);
     poolPtr = new char[poolSize_];
     poolSize = poolSize_;
 }
 
-void MemoryPool::reservePool(const size_t& poolSize_) {
-    tooBigCheck(poolSize_, MAX_SPACE);
-
+void MemoryPool::reservePool(const size_t& poolSize_)
+{
     if (poolPtr) {
-      delete[] poolPtr;
+        delete[] poolPtr;
     }
 
     poolPtr = new char[poolSize_];
@@ -36,7 +36,7 @@ void* MemoryPool::allocate(const size_t& reserveSize)
     size_t poolSizeTmp = poolSize;
 
     if (occupiedSpace.empty()) {
-        tooBigCheck(reserveSize, MAX_SPACE);
+        tooBigAllocCheck(reserveSize, poolSize);
         occupiedSpace.push_back(OccupiedInterval(poolPtr, reserveSize));
         return poolPtr;
     }
@@ -65,7 +65,7 @@ void* MemoryPool::allocate(const size_t& reserveSize)
     auto lastInterv = occupiedSpace.end();
     --lastInterv;
     size_t availableSpace = (poolPtr + poolSize) - lastInterv->occupPtrEnd;
-    tooBigCheck(reserveSize,  availableSpace);
+    tooBigAllocCheck(reserveSize,  availableSpace);
     occupiedSpace.push_back(OccupiedInterval(
         lastInterv->occupPtrEnd, reserveSize));
     return lastInterv->occupPtrEnd;
@@ -112,7 +112,8 @@ void* MemoryPool::reallocatePool(const size_t& poolSizeNew)
 void* MemoryPool::reallocate(void* intervalPtr, const size_t& newIntervalSize)
 {
     std::lock_guard<std::recursive_mutex> guard(mtMemory);
-    tooBigCheck(newIntervalSize, poolSize);
+    tooBigAllocCheck(newIntervalSize, poolSize);
+    tooSmallAllocCheck(newIntervalSize);
 
     auto interval = std::find(occupiedSpace.begin(),
         occupiedSpace.end(), intervalPtr);
@@ -128,7 +129,7 @@ void* MemoryPool::reallocate(void* intervalPtr, const size_t& newIntervalSize)
             return intervalPtr;
         } else {
             size_t availableSpace = (poolPtr + poolSize) - interval->occupPtrEnd;
-            tooBigCheck(newIntervalSize, availableSpace);
+            tooBigAllocCheck(newIntervalSize, availableSpace);
             char* tmpIntervalPtr = (char*)allocate(newIntervalSize);
             memcpy(tmpIntervalPtr, intervalPtr, oldIntervalSize);
             freeMemory(intervalPtr);

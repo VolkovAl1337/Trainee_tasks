@@ -1,20 +1,17 @@
 #ifndef MEMORYPOOL_H
 #define MEMORYPOOL_H
-#include "OccupiedInterval.h"
 
-#include <iostream>
-#include <cstring>
-
-#include <list>
 #include <algorithm>
+#include <cstring>
+#include <iostream>
+#include <list>
 #include <mutex>
 #include <thread>
 
-const size_t BYTES_IN_8_MB = 8e+6;
-const size_t MAX_SPACE = 1.24e+9; //1 GB
+#include "OccupiedInterval.h"
 
 class OutOfMemoryException{};
-class TooSmallException{};
+class NegativeOrZeroException{};
 class WrongPointerException{};
 
 class MemoryPool
