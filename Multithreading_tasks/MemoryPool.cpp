@@ -123,13 +123,14 @@ void* MemoryPool::reallocate(void* intervalPtr, const size_t& newIntervalSize)
         char* tmpIntervalEndPtr = **interval + newIntervalSize;
 
         if (oldIntervalSize >= newIntervalSize ||
-        tmpIntervalEndPtr <= **(std::next(interval)) ||
-        std::next(interval) == occupiedSpace.end()) {
+            tmpIntervalEndPtr <= **(std::next(interval)) ||
+            std::next(interval) == occupiedSpace.end() &&
+            tmpIntervalEndPtr <= poolPtr + poolSize) {
             interval->occupPtrEnd = tmpIntervalEndPtr;
             return intervalPtr;
         } else {
-            size_t availableSpace = (poolPtr + poolSize) - interval->occupPtrEnd;
-            tooBigAllocCheck(newIntervalSize, availableSpace);
+            // size_t availableSpace = (poolPtr + poolSize) - interval->occupPtrEnd;
+            // tooBigAllocCheck(newIntervalSize, availableSpace);
             char* tmpIntervalPtr = (char*)allocate(newIntervalSize);
             memcpy(tmpIntervalPtr, intervalPtr, oldIntervalSize);
             freeMemory(intervalPtr);
